@@ -1,0 +1,515 @@
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <math.h>
+#include <ctime>
+#include <random>
+#include <algorithm>
+
+using std::cin;
+using std::vector;
+using std::string;
+using std::cout;
+using std::endl;
+
+using namespace sf;
+
+struct street {
+    string title;
+    string color;
+    int homeCount = 0;
+    int position;
+    bool hotelCount = 0;
+    string owner = "Нет";
+    int cost;
+    int rent = 0;
+    /*
+    street() {
+        title = "title";
+        color = "color";
+        position = 1;
+        owner = "no";
+        cost = 320;
+    }
+    */
+    street(const string name, const string colour, int pos, int money) {
+        title = name;
+        color = colour;
+        position = pos;
+        cost = money;
+    }
+
+};
+
+struct color {
+private:
+    vector<street> streets;
+    bool singleOwner;
+};
+
+struct player {
+    string name;
+    int cash = 50;
+    int currentPosition = 0;
+    vector<street> srteets;
+    bool inJail = false;
+    bool freeJail = false;
+    player(const string& n) {
+        name = n;
+    }
+};
+
+bool clicked(RectangleShape button, Vector2i click, int butW, int butH) {
+    int x = button.getPosition().x;
+    int y = button.getPosition().y;
+    int clickX = click.x;
+    int clickY = click.y;
+    if (clickX >= x && clickX <= x + butW && clickY >= y && clickY <= y + butH) {
+        return true;
+    }
+    return false;
+}
+
+enum windowState {
+    START,
+    START_INPUT,
+    IN_GAME,
+    CUBE_DROPED,
+    GAMER_STEP,
+    TALE_MARK,
+    TALE_PREWIEW,
+    TAX_100,
+    TAX_200,
+    COMMONU_CHEST,
+    CHANCE,
+    TO_JAIL_TABLE,
+    POINT_THE_TILE,
+    GAME_OVER,
+    EXIT,
+};
+
+enum figures {
+    DOG,
+    CAT,
+    CAR,
+    HAT,
+    BOOT,
+    SHIP,
+};
+
+int currentWindowState = START;
+
+vector<string> chance{
+        "Пришло время капитального ремонта вышей собственности. Заплатите за каждый дом по 25, за каждый отель по 100",
+        "Отправляйтесь на St.James Place",
+        "Отправляйтесь на Boardwalk",
+        "Отправляйтесь на поле Start",
+        "Отправляйтесь в тюрьму",
+        "Наступил срок исполнения платежа по вашей ссуде на строительство. Получите 150",
+        "Вернитесь на 3 поля назад",
+        "Банк платит вам дивиденты в размере 50",
+        "Отправляйтесь до Reading railroad",
+        "Отправляйтесь на Virginia Avenue",
+        "Штраф за превышение скорости. Заплатите 15",
+        "Вас избрали председателем совета директоров. Заплатите каждому игроку по 50",
+        "Отправляйтесь на ближайшую ж/д станцию. Если она в собственности, заплатите удвоенную арендную плату",
+        "Отправляйтесь на ближайшее коммунальное предприятие. Если оно находится в собственности, десятикратную сумму выпавших очков",
+        "Бесплатное освобождение из тюрьмы"
+};
+
+vector<int> usedFigures;
+
+bool checkUsedFigures(int figure) {
+    for (int i = 0; i < usedFigures.size(); ++i) {
+        if (usedFigures[i] == figure) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+bool checkLose(player& a) {
+    if (a.cash < 0) {
+        return true;
+    }
+    return false;
+}
+
+vector<string> communityChest{
+       "От вас требуется провести ремонтные работы. Зплатите за каждый дом по 40, за каждый отель по 115",
+       "Оплатите расходы на госпитализацию в размере 100",
+       "Идите на поле Start",
+       "Вы заняли второе место на конкурсе красоты. Получите 10",
+       "Сегодня ваш день рождения. Получите по 10 от каждого игрока",
+       "Оплатите обучение в размере 50",
+       "Получите 25 за консалтинговые услуги",
+       "Наступил срок исполнения платежа по страхованию жизни. Получите 100",
+       "Возмещение подоходного налога. Получите 20",
+       "Визит к врачу. Заплатите 50",
+       "Банковская ошибка в вашу пользу. Получите 200",
+       "Бесплатное освобождение из тюрьмы",
+       "Отправляйтесь в тюрьму",
+       "На продаже акций вы заработали 50",
+       "Наступил срок исполнения платежа по отпускному фонду. Получите 100",
+       "Вы получаете в наследство 100"
+};
+
+vector<player> players;
+
+vector<street> streets = {
+   street("Start", "-", 0, 0),
+   street("Mediterranean Avenue", "Коричневый", 1, 60),
+   street("CC", "-", 2, 0),
+   street("Baltic Avenue", "Коричневый", 3, 60),
+   street("Income Tax", "-", 4, 200),
+   street("Reading RailRoad", "ж/д", 5, 200),
+   street("Oriental Avenue", "Голубой", 6, 100),
+   street("C", "-", 7, 0),
+   street("Vermont Avenue", "Голубой", 8, 100),
+   street("Connecticut Avenue", "Голубой", 9, 120),
+   street("Jail", "-", 10, 0),
+   street("St. Sharles Place", "Розовый", 11, 140),
+   street("Ellectic Company", "Коммунальные", 12, 150),
+   street("States Avenue", "Розовый", 13, 140),
+   street("Virginia Avenue", "Розовый", 14, 160),
+   street("Pennsylvania RailRoad", "ж/д", 15, 200),
+   street("St. James Place", "Оранжевый", 16, 180),
+   street("CC", "-", 17, 0),
+   street("Tennessee Avenue", "Оранжевый", 18, 180),
+   street("New York Avenue", "Оранжевый", 19, 200),
+   street("Parking", "-", 20, 0),
+   street("Kentucky Avenue", "Красный", 21, 220),
+   street("C", "-", 22, 0),
+   street("Indiana Avenue", "Красный", 23, 220),
+   street("Illinois Avenue", "Красный", 24, 240),
+   street("B. & O. RailRoad", "ж/д", 25, 200),
+   street("Atlantic Avenue", "Желтый", 26, 260),
+   street("Ventnor Avenue", "Желтый", 27, 260),
+   street("Water Works", "Коммунальные", 28, 150),
+   street("Marvin Avenue", "Желтый", 29, 280),
+   street("Go Jail", "-", 30, 0),
+   street("Pacific Avenue", "Зеленый", 31, 300),
+   street("North Carolina Avenue", "Зеленый", 32, 300),
+   street("CC", "-", 33, 0),
+   street("Pennsylvania Avenue", "Зеленый", 34, 320),
+   street("Short Line", "ж/д", 35, 200),
+   street("C", "-", 36, 0),
+   street("Park Place", "Синий", 37, 350),
+   street("Luxury Tax", "-", 38, 100),
+   street("BoardWalk", "Синий", 39, 400),
+};
+
+vector<RectangleShape> tales;
+
+int playerQ = 2;
+
+int currentGamer = 0;
+
+int cubeResult = 0;
+
+void drawInfo(RenderWindow& win, Font& font, street str) {
+    Text info("", font, 30);
+    info.setFillColor(Color::White);
+    info.setStyle(Text::Bold);
+    info.setString("Название: " + str.title);
+    info.setPosition(250, 350);
+    win.draw(info);
+    info.setString("Цвет(отрасль): " + str.color);
+    info.setPosition(250, 400);
+    win.draw(info);
+    info.setString("Цена: " + std::to_string(str.cost));
+    info.setPosition(250, 450);
+    win.draw(info);
+    info.setString("Владелец: " + str.owner);
+    info.setPosition(250, 500);
+    win.draw(info);
+
+}
+
+int main() {
+    srand(time(0));
+    RenderWindow window(VideoMode(950, 950), "Monopoly");
+    Font font;
+    font.loadFromFile("E:/Рабочий стол/8/CyrilicOld.TTF");
+
+    RectangleShape tale0(Vector2f(125, 125));
+    tale0.setPosition(825, 825);
+    tale0.setFillColor(Color(0, 0, 0, 0));
+    tales.push_back(tale0);
+    window.draw(tale0);
+    int shift = 76;
+    for (int i = 0; i < 9; ++i) {
+        RectangleShape tale(Vector2f(76, 125));
+        tale.setPosition(825 - shift, 825);
+        tale.setFillColor(Color(0, 0, 0, 0));
+        tales.push_back(tale);
+        window.draw(tale);
+        shift += 78;
+    }
+    RectangleShape tale10(Vector2f(125, 125));
+    tale10.setPosition(0, 825);
+    tale10.setFillColor(Color(0, 0, 0, 1));
+    tales.push_back(tale10);
+    window.draw(tale10);
+    shift = 76;
+    for (int i = 0; i < 9; ++i) {
+        RectangleShape tale(Vector2f(125, 76));
+        tale.setPosition(0, 825 - shift);
+        tale.setFillColor(Color(0, 0, 0, 0));
+        tales.push_back(tale);
+        window.draw(tale);
+        shift += 78;
+    }
+    RectangleShape tale20(Vector2f(125, 125));
+    tale20.setPosition(0, 0);
+    tale20.setFillColor(Color(0, 0, 0, 0));
+    tales.push_back(tale20);
+    window.draw(tale20);
+    shift = 125;
+    for (int i = 0; i < 9; ++i) {
+        RectangleShape tale(Vector2f(76, 125));
+        tale.setPosition(0 + shift, 0);
+        tale.setFillColor(Color(0, 0, 0, 0));
+        tales.push_back(tale);
+        window.draw(tale);
+        shift += 78;
+    }
+    RectangleShape tale40(Vector2f(125, 125));
+    tale40.setPosition(825, 0);
+    tale40.setFillColor(Color(0, 0, 0, 0));
+    tales.push_back(tale40);
+    window.draw(tale40);
+    shift = 125;
+    for (int i = 0; i < 9; ++i) {
+        RectangleShape tale(Vector2f(125, 76));
+        tale.setPosition(825, 0 + shift);
+        tale.setFillColor(Color(0, 0, 0, 0));
+        tales.push_back(tale);
+        window.draw(tale);
+        shift += 78;
+    }
+    //window.display();
+
+    while (window.isOpen()) {
+        switch (currentWindowState)
+        {
+        case START:
+        {
+            Image bluredField;
+            bluredField.loadFromFile("E:/Рабочий стол/8/bluredField.jpg");
+
+            Texture bluredFieldTexture;
+            bluredFieldTexture.loadFromImage(bluredField);
+
+            Sprite bluredSprite(bluredFieldTexture);
+            bluredSprite.setPosition(0, 0);
+
+            window.clear();
+            window.draw(bluredSprite);
+            //Font font;
+            //font.loadFromFile("E:/Рабочий стол/8/CyrilicOld.TTF");
+            Text playerSet("", font, 50);
+            playerSet.setFillColor(Color::White);
+            playerSet.setStyle(Text::Bold);
+            playerSet.setString("Сколько будет игроков?");
+            playerSet.setPosition(200, 10);
+            window.draw(playerSet);
+            RectangleShape button1(Vector2f(100, 50));
+            RectangleShape button2(Vector2f(100, 50));
+            RectangleShape button3(Vector2f(100, 50));
+            RectangleShape button4(Vector2f(100, 50));
+            RectangleShape button5(Vector2f(100, 50));
+            RectangleShape button6(Vector2f(100, 50));
+            button1.setPosition(50, 100);
+            button2.setPosition(200, 100);
+            button3.setPosition(350, 100);
+            button4.setPosition(500, 100);
+            button5.setPosition(650, 100);
+            button6.setPosition(800, 100);
+            window.draw(button1);
+            window.draw(button2);
+            window.draw(button3);
+            window.draw(button4);
+            window.draw(button5);
+            window.draw(button6);
+            int beforePos = 87;
+            for (int i = 0; i < 6; ++i) {
+                Text numbers("", font, 50);
+                numbers.setFillColor(Color::Black);
+                numbers.setStyle(Text::Bold);
+                numbers.setString(char(i + 49));
+                numbers.setPosition(beforePos, 93);
+                beforePos += 150;
+                window.draw(numbers);
+            }
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+
+                    if (event.mouseButton.button == sf::Mouse::Left && clicked(button1, Mouse::getPosition(window), 100, 50)) {
+                        playerQ = 1;
+                        currentWindowState = START_INPUT;
+                    }
+                    if (event.mouseButton.button == sf::Mouse::Left && clicked(button2, Mouse::getPosition(window), 100, 50)) {
+                        playerQ = 2;
+                        currentWindowState = START_INPUT;
+                    }
+                    if (event.mouseButton.button == sf::Mouse::Left && clicked(button3, Mouse::getPosition(window), 100, 50)) {
+                        playerQ = 3;
+                        currentWindowState = START_INPUT;
+                    }
+                    if (event.mouseButton.button == sf::Mouse::Left && clicked(button4, Mouse::getPosition(window), 100, 50)) {
+                        playerQ = 4;
+                        currentWindowState = START_INPUT;
+                    }
+                    if (event.mouseButton.button == sf::Mouse::Left && clicked(button5, Mouse::getPosition(window), 100, 50)) {
+                        playerQ = 5;
+                        currentWindowState = START_INPUT;
+                    }
+                    if (event.mouseButton.button == sf::Mouse::Left && clicked(button6, Mouse::getPosition(window), 100, 50)) {
+                        playerQ = 6;
+                        currentWindowState = START_INPUT;
+                    }
+                }
+            }
+            window.display();
+            break;
+        }
+
+        case START_INPUT:
+        {
+            RectangleShape figure1(Vector2f(100, 50)); //Собака
+            RectangleShape figure2(Vector2f(100, 50)); //Кот
+            RectangleShape figure3(Vector2f(100, 50)); //Машинка
+            RectangleShape figure4(Vector2f(100, 50)); //Шляпа
+            RectangleShape figure5(Vector2f(100, 50)); //Сапог
+            RectangleShape figure6(Vector2f(100, 50)); //Кораблик
+            figure1.setPosition(50, 500);
+            figure2.setPosition(200, 500);
+            figure3.setPosition(350, 500);
+            figure4.setPosition(500, 500);
+            figure5.setPosition(650, 500);
+            figure6.setPosition(800, 500);
+            window.draw(figure1);
+            window.draw(figure2);
+            window.draw(figure3);
+            window.draw(figure4);
+            window.draw(figure5);
+            window.draw(figure6);
+            window.display();
+            while (players.size() != playerQ) {
+                Event event;
+                while (window.pollEvent(event)) {
+                    switch (event.type) {
+                    case Event::Closed:
+                        window.close();
+                        break;
+
+                    case Event::MouseButtonPressed:
+                        if (event.mouseButton.button == sf::Mouse::Left && clicked(figure1, Mouse::getPosition(window), 100, 50)) {
+                            if (!checkUsedFigures(0)) {
+                                usedFigures.push_back(DOG);
+                                player p("Собака");
+                                players.push_back(p);
+                                Text gamer("", font, 20);
+                                gamer.setFillColor(Color::Red);
+                                gamer.setStyle(Text::Bold);
+                                gamer.setString("Игрок " + char(players.size() + 48));
+                                gamer.setPosition(figure1.getPosition().x, figure1.getPosition().y + 70);
+                                window.draw(gamer);
+                                //window.display();
+
+                            }
+                        }
+                        if (event.mouseButton.button == Mouse::Left && clicked(figure2, Mouse::getPosition(window), 100, 50)) {
+                            if (!checkUsedFigures(1)) {
+                                usedFigures.push_back(CAT);
+                                player p("Кот");
+                                players.push_back(p);
+                                Text gamer("", font, 20);
+                                gamer.setFillColor(Color::Red);
+                                gamer.setStyle(Text::Bold);
+                                gamer.setString("Игрок " + char(players.size() + 48));
+                                gamer.setPosition(figure2.getPosition().x, figure2.getPosition().y + 70);
+                                window.draw(gamer);
+                                //window.display();
+                            }
+
+                        }
+                        if (event.mouseButton.button == Mouse::Left && clicked(figure3, Mouse::getPosition(window), 100, 50)) {
+                            if (!checkUsedFigures(2)) {
+                                usedFigures.push_back(CAR);
+                                player p("Машинка");
+                                players.push_back(p);
+                                Text gamer("", font, 20);
+                                gamer.setFillColor(Color::Red);
+                                gamer.setStyle(Text::Bold);
+                                gamer.setString("Игрок " + char(players.size() + 48));
+                                gamer.setPosition(figure3.getPosition().x, figure3.getPosition().y + 70);
+                                window.draw(gamer);
+                                //window.display();
+                            }
+                        }
+                        if (event.mouseButton.button == sf::Mouse::Left && clicked(figure4, Mouse::getPosition(window), 100, 50)) {
+                            if (!checkUsedFigures(3)) {
+                                usedFigures.push_back(HAT);
+                                player p("Шляпа");
+                                players.push_back(p);
+                                Text gamer("", font, 20);
+                                gamer.setFillColor(Color::Red);
+                                gamer.setStyle(Text::Bold);
+                                gamer.setString("Игрок " + char(players.size() + 48));
+                                gamer.setPosition(figure4.getPosition().x, figure4.getPosition().y + 70);
+                                window.draw(gamer);
+                                //window.display();
+                            }
+                        }
+                        if (event.mouseButton.button == sf::Mouse::Left && clicked(figure5, Mouse::getPosition(window), 100, 50)) {
+                            if (!checkUsedFigures(4)) {
+                                usedFigures.push_back(BOOT);
+                                player p("Сапог");
+                                players.push_back(p);
+                                Text gamer("", font, 20);
+                                gamer.setFillColor(Color::Red);
+                                gamer.setStyle(Text::Bold);
+                                gamer.setString("Игрок " + char(players.size() + 48));
+                                gamer.setPosition(figure5.getPosition().x, figure5.getPosition().y + 70);
+                                window.draw(gamer);
+                                //window.display();
+                            }
+                        }
+                        if (event.mouseButton.button == sf::Mouse::Left && clicked(figure6, Mouse::getPosition(window), 100, 50)) {
+                            if (!checkUsedFigures(5)) {
+                                usedFigures.push_back(SHIP);
+                                player p("Кораблик");
+                                players.push_back(p);
+                                Text gamer("", font, 20);
+                                gamer.setFillColor(Color::Red);
+                                gamer.setStyle(Text::Bold);
+                                gamer.setString("Игрок " + char(players.size() + 48));
+                                gamer.setPosition(figure6.getPosition().x, figure6.getPosition().y + 70);
+                                window.draw(gamer);
+                            }
+                        }
+                    }
+                }
+            }
+            currentWindowState = IN_GAME;
+            break;
+        }
+        case IN_GAME:
+        {
+
+
+        }
+        }
+        return 0;
+    }
