@@ -508,6 +508,161 @@ int main() {
         case IN_GAME:
         {
 
+            Image normalField;
+            normalField.loadFromFile("E:/Рабочий стол/8/bestField3.jpg");
+
+            Texture normalFieldTexture;
+            normalFieldTexture.loadFromImage(normalField);
+
+            Sprite normalSprite(normalFieldTexture);
+            normalSprite.setPosition(0, 0);
+
+            window.clear();
+            window.draw(normalSprite);
+
+            RectangleShape dropCube(Vector2f(170, 70));
+            dropCube.setPosition(650, 150);
+            dropCube.setFillColor(Color::Green);
+
+            window.draw(dropCube);
+
+            Text cost("", font, 20);
+            cost.setFillColor(Color::Black);
+            cost.setStyle(Text::Bold);
+            cost.setString("Счет: " + std::to_string(players[currentGamer].cash));
+            cost.setPosition(350, 130);
+            window.draw(cost);
+
+            Text drop("", font, 25);
+            drop.setFillColor(Color::Black);
+            drop.setStyle(Text::Bold);
+            drop.setString("Бросить кубик");
+            drop.setPosition(dropCube.getPosition().x, dropCube.getPosition().y + 20);
+            window.draw(drop);
+
+            Text gamerTilt("", font, 20);
+            gamerTilt.setFillColor(Color::Black);
+            gamerTilt.setStyle(Text::Bold);
+            gamerTilt.setString("Игрок: " + players[currentGamer].name);
+            gamerTilt.setPosition(140, 130);
+            window.draw(gamerTilt);
+            window.display();
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Left && clicked(dropCube, Mouse::getPosition(window), 170, 70)) {
+                        int result = rand() % 6;
+                        Text res("", font, 25);
+                        currentWindowState = CUBE_DROPED;
+                    }
+                    break;
+                }
+
+            }
+
+            if (players.size() == 1) {
+                currentWindowState = EXIT;
+            }
+
+
+            break;
+        }
+        case CUBE_DROPED:
+        {
+            if (!cubeResult) {
+                cubeResult = rand() % 12 + 1;
+            }
+            Text res("", font, 40);
+            res.setFillColor(Color::Black);
+            res.setStyle(Text::Bold);
+            res.setString(std::to_string(cubeResult));
+            res.setPosition(720, 230);
+            window.draw(res);
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+                }
+            }
+            currentWindowState = GAMER_STEP;
+            window.display();
+            break;
+        }
+        case GAMER_STEP:
+        {
+            for (int i = 0; i < cubeResult; ++i) {
+                players[currentGamer].currentPosition = (players[currentGamer].currentPosition + 1) % 40;;
+                if (players[currentGamer].currentPosition == 0) {
+                    players[currentGamer].cash += 200;
+                }
+            }
+            if (players[currentGamer].currentPosition == 30) {
+                players[currentGamer].inJail = true;
+                players[currentGamer].currentPosition = 10;
+                currentWindowState = TO_JAIL_TABLE;
+            }
+            else if (players[currentGamer].currentPosition == 7 || players[currentGamer].currentPosition == 22 || players[currentGamer].currentPosition == 36) {
+                //реализовать карточки шанс
+
+                currentWindowState = TALE_MARK;
+            }
+            else if (players[currentGamer].currentPosition == 2 || players[currentGamer].currentPosition == 17 || players[currentGamer].currentPosition == 33) {
+                //реализовать карточки общественная казна
+                currentWindowState = TALE_MARK;
+            }
+            else if (players[currentGamer].currentPosition == 4) {
+                currentWindowState = TAX_200;
+            }
+            else if (players[currentGamer].currentPosition == 38) {
+                currentWindowState = TAX_100;
+            }
+            else if (players[currentGamer].currentPosition == 0 || players[currentGamer].currentPosition == 10 || players[currentGamer].currentPosition == 20) {
+
+                currentGamer = (currentGamer + 1) % playerQ;
+                currentWindowState = POINT_THE_TILE;
+            }
+            else {
+                currentWindowState = TALE_MARK;
+            }
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+                }
+            }
+            //window.display();
+            break;
+        }
+        case POINT_THE_TILE:
+        {
+            tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+            window.draw(tales[players[currentGamer].currentPosition]);
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    currentWindowState = IN_GAME;
+                }
+            }
+            window.display();
+            break;
+        }
+        case TO_JAIL_TABLE:
+        {
 
         }
         }
