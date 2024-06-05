@@ -24,21 +24,14 @@ struct street {
     bool hotelCount = 0;
     string owner = "Нет";
     int cost;
-    int rent = 0;
-    /*
-    street() {
-        title = "title";
-        color = "color";
-        position = 1;
-        owner = "no";
-        cost = 320;
-    }
-    */
-    street(const string name, const string colour, int pos, int money) {
+    int rent;
+
+    street(const string name, const string colour, int pos, int money, int nrent) {
         title = name;
         color = colour;
         position = pos;
         cost = money;
+        rent = nrent;
     }
 
 };
@@ -51,7 +44,7 @@ private:
 
 struct player {
     string name;
-    int cash = 50;
+    int cash = 100;
     int currentPosition = 0;
     vector<street> srteets;
     bool inJail = false;
@@ -102,20 +95,12 @@ enum figures {
 int currentWindowState = START;
 
 vector<string> chance{
-        "Пришло время капитального ремонта вышей собственности. Заплатите за каждый дом по 25, за каждый отель по 100",
-        "Отправляйтесь на St.James Place",
-        "Отправляйтесь на Boardwalk",
         "Отправляйтесь на поле Start",
         "Отправляйтесь в тюрьму",
-        "Наступил срок исполнения платежа по вашей ссуде на строительство. Получите 150",
-        "Вернитесь на 3 поля назад",
+        "Наступил срок исполнения\nплатежа по вашей ссуде\nна строительство. Получите 150",
         "Банк платит вам дивиденты в размере 50",
-        "Отправляйтесь до Reading railroad",
-        "Отправляйтесь на Virginia Avenue",
-        "Штраф за превышение скорости. Заплатите 15",
-        "Вас избрали председателем совета директоров. Заплатите каждому игроку по 50",
-        "Отправляйтесь на ближайшую ж/д станцию. Если она в собственности, заплатите удвоенную арендную плату",
-        "Отправляйтесь на ближайшее коммунальное предприятие. Если оно находится в собственности, десятикратную сумму выпавших очков",
+        "Штраф за превышение скорости.\nЗаплатите 15",
+        "Вас избрали председателем\nсовета директоров. Заплатите\nкаждому игроку по 50",
         "Бесплатное освобождение из тюрьмы"
 };
 
@@ -138,67 +123,58 @@ bool checkLose(player& a) {
 }
 
 vector<string> communityChest{
-       "От вас требуется провести ремонтные работы. Зплатите за каждый дом по 40, за каждый отель по 115",
-       "Оплатите расходы на госпитализацию в размере 100",
-       "Идите на поле Start",
-       "Вы заняли второе место на конкурсе красоты. Получите 10",
-       "Сегодня ваш день рождения. Получите по 10 от каждого игрока",
-       "Оплатите обучение в размере 50",
-       "Получите 25 за консалтинговые услуги",
-       "Наступил срок исполнения платежа по страхованию жизни. Получите 100",
-       "Возмещение подоходного налога. Получите 20",
-       "Визит к врачу. Заплатите 50",
-       "Банковская ошибка в вашу пользу. Получите 200",
-       "Бесплатное освобождение из тюрьмы",
-       "Отправляйтесь в тюрьму",
-       "На продаже акций вы заработали 50",
-       "Наступил срок исполнения платежа по отпускному фонду. Получите 100",
-       "Вы получаете в наследство 100"
+       "Оплатите расходы на\nгоспитализацию в размере\n100",
+       "Оплатите обучение\nв размере 50",
+       "Наступил срок исполнения\nплатежа по страхованию\nжизни. Получите 100",
+       "Визит к врачу.\nЗаплатите 50",
+       "Банковская ошибка в\nвашу пользу. Получите 200",
+       "Бесплатное освобождение \nиз тюрьмы",
+       "Наступил срок исполнения\nплатежа по отпускному\nфонду. Получите 100",
 };
 
 vector<player> players;
 
 vector<street> streets = {
-   street("Start", "-", 0, 0),
-   street("Mediterranean Avenue", "Коричневый", 1, 60),
-   street("CC", "-", 2, 0),
-   street("Baltic Avenue", "Коричневый", 3, 60),
-   street("Income Tax", "-", 4, 200),
-   street("Reading RailRoad", "ж/д", 5, 200),
-   street("Oriental Avenue", "Голубой", 6, 100),
-   street("C", "-", 7, 0),
-   street("Vermont Avenue", "Голубой", 8, 100),
-   street("Connecticut Avenue", "Голубой", 9, 120),
-   street("Jail", "-", 10, 0),
-   street("St. Sharles Place", "Розовый", 11, 140),
-   street("Ellectic Company", "Коммунальные", 12, 150),
-   street("States Avenue", "Розовый", 13, 140),
-   street("Virginia Avenue", "Розовый", 14, 160),
-   street("Pennsylvania RailRoad", "ж/д", 15, 200),
-   street("St. James Place", "Оранжевый", 16, 180),
-   street("CC", "-", 17, 0),
-   street("Tennessee Avenue", "Оранжевый", 18, 180),
-   street("New York Avenue", "Оранжевый", 19, 200),
-   street("Parking", "-", 20, 0),
-   street("Kentucky Avenue", "Красный", 21, 220),
-   street("C", "-", 22, 0),
-   street("Indiana Avenue", "Красный", 23, 220),
-   street("Illinois Avenue", "Красный", 24, 240),
-   street("B. & O. RailRoad", "ж/д", 25, 200),
-   street("Atlantic Avenue", "Желтый", 26, 260),
-   street("Ventnor Avenue", "Желтый", 27, 260),
-   street("Water Works", "Коммунальные", 28, 150),
-   street("Marvin Avenue", "Желтый", 29, 280),
-   street("Go Jail", "-", 30, 0),
-   street("Pacific Avenue", "Зеленый", 31, 300),
-   street("North Carolina Avenue", "Зеленый", 32, 300),
-   street("CC", "-", 33, 0),
-   street("Pennsylvania Avenue", "Зеленый", 34, 320),
-   street("Short Line", "ж/д", 35, 200),
-   street("C", "-", 36, 0),
-   street("Park Place", "Синий", 37, 350),
-   street("Luxury Tax", "-", 38, 100),
-   street("BoardWalk", "Синий", 39, 400),
+   street("Start", "-", 0, 0, 0),
+   street("Mediterranean Avenue", "Коричневый", 1, 60, 12),
+   street("CC", "-", 2, 0, 0),
+   street("Baltic Avenue", "Коричневый", 3, 60, 12),
+   street("Income Tax", "-", 4, 200, 0),
+   street("Reading RailRoad", "ж/д", 5, 200, 100),
+   street("Oriental Avenue", "Голубой", 6, 100, 30),
+   street("C", "-", 7, 0, 0),
+   street("Vermont Avenue", "Голубой", 8, 100, 33),
+   street("Connecticut Avenue", "Голубой", 9, 120, 37),
+   street("Jail", "-", 10, 0, 0),
+   street("St. Sharles Place", "Розовый", 11, 140, 45),
+   street("Ellectic Company", "Коммунальные", 12, 150, 100),
+   street("States Avenue", "Розовый", 13, 140, 46),
+   street("Virginia Avenue", "Розовый", 14, 160, 47),
+   street("Pennsylvania RailRoad", "ж/д", 15, 200, 100),
+   street("St. James Place", "Оранжевый", 16, 180, 68),
+   street("CC", "-", 17, 0, 0),
+   street("Tennessee Avenue", "Оранжевый", 18, 180, 75),
+   street("New York Avenue", "Оранжевый", 19, 200, 90),
+   street("Parking", "-", 20, 0, 0),
+   street("Kentucky Avenue", "Красный", 21, 220, 100),
+   street("C", "-", 22, 0, 0),
+   street("Indiana Avenue", "Красный", 23, 220, 110),
+   street("Illinois Avenue", "Красный", 24, 240, 125),
+   street("B. & O. RailRoad", "ж/д", 25, 200, 100),
+   street("Atlantic Avenue", "Желтый", 26, 260, 170),
+   street("Ventnor Avenue", "Желтый", 27, 260, 190),
+   street("Water Works", "Коммунальные", 28, 150, 100),
+   street("Marvin Avenue", "Желтый", 29, 280, 200),
+   street("Go Jail", "-", 30, 0, 0),
+   street("Pacific Avenue", "Зеленый", 31, 300, 230),
+   street("North Carolina Avenue", "Зеленый", 32, 300, 270),
+   street("CC", "-", 33, 0, 0),
+   street("Pennsylvania Avenue", "Зеленый", 34, 320, 330),
+   street("Short Line", "ж/д", 35, 200, 100),
+   street("C", "-", 36, 0, 0),
+   street("Park Place", "Синий", 37, 350, 350),
+   street("Luxury Tax", "-", 38, 100, 0),
+   street("BoardWalk", "Синий", 39, 400, 400),
 };
 
 vector<RectangleShape> tales;
@@ -208,6 +184,8 @@ int playerQ = 2;
 int currentGamer = 0;
 
 int cubeResult = 0;
+
+bool pressed = false;
 
 void drawInfo(RenderWindow& win, Font& font, street str) {
     Text info("", font, 30);
@@ -225,6 +203,57 @@ void drawInfo(RenderWindow& win, Font& font, street str) {
     info.setString("Владелец: " + str.owner);
     info.setPosition(250, 500);
     win.draw(info);
+}
+
+void drawChance(RenderWindow& window, Font& font, bool type, int number) {
+    bool submit = false;
+    while (!submit) {
+        tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+        window.draw(tales[players[currentGamer].currentPosition]);
+        RectangleShape InfoWindow(Vector2f(500, 300));
+        InfoWindow.setPosition(225, 325);
+        InfoWindow.setFillColor(Color(0, 0, 0, 3));
+        window.draw(InfoWindow);
+        Text tax100("", font, 20);
+        tax100.setFillColor(Color::White);
+        if (type == 0) {
+            tax100.setString(chance[number]);
+        }
+        else {
+            tax100.setString(communityChest[number]);
+        }
+        tax100.setPosition(300, 400);
+        window.draw(tax100);
+
+        RectangleShape BUY(Vector2f(120, 50));
+        BUY.setPosition(420, 550);
+        BUY.setFillColor(Color::White);
+        window.draw(BUY);
+
+        Text buy("", font, 25);
+        buy.setFillColor(Color::Black);
+        buy.setStyle(Text::Bold);
+        buy.setString("ОК");
+        buy.setPosition(459, 557);
+        window.draw(buy);
+
+        Event event;
+        while (window.pollEvent(event)) {
+            switch (event.type) {
+            case Event::Closed:
+                window.close();
+                break;
+
+            case Event::MouseButtonPressed:
+                if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 120, 50)) {
+                    //currentWindowState = IN_GAME;
+                    //cubeResult = 0;
+                    submit = true;
+                }
+            }
+        }
+        window.display();
+    }
 
 }
 
@@ -404,6 +433,38 @@ int main() {
             window.draw(figure4);
             window.draw(figure5);
             window.draw(figure6);
+            Text text("", font, 20);
+            Text cat("", font, 50);
+            Text car("", font, 50);
+            Text hat("", font, 50);
+            Text boot("", font, 50);
+            Text ship("", font, 50);
+
+            text.setFillColor(Color::Black);
+            text.setString("Собака");
+            text.setPosition(71, 510);
+            window.draw(text);
+
+            text.setString("Кот");
+            text.setPosition(233, 510);
+            window.draw(text);
+
+            text.setString("Машинка");
+            text.setPosition(357, 510);
+            window.draw(text);
+
+            text.setString("Шляпа");
+            text.setPosition(517, 510);
+            window.draw(text);
+
+            text.setString("Сапог");
+            text.setPosition(677, 510);
+            window.draw(text);
+
+            text.setString("Кораблик");
+            text.setPosition(810, 510);
+            window.draw(text);
+
             window.display();
             while (players.size() != playerQ) {
                 Event event;
@@ -575,7 +636,8 @@ int main() {
         case CUBE_DROPED:
         {
             if (!cubeResult) {
-                cubeResult = rand() % 12 + 1;
+                //cubeResult = rand() % 12 + 1;
+                cubeResult = 1;
             }
             Text res("", font, 40);
             res.setFillColor(Color::Black);
@@ -598,6 +660,12 @@ int main() {
         }
         case GAMER_STEP:
         {
+
+            if (players[currentGamer].inJail == true) {
+                currentGamer = (currentGamer + 1) % playerQ;
+                players[currentGamer].inJail == false;
+            }
+
             for (int i = 0; i < cubeResult; ++i) {
                 players[currentGamer].currentPosition = (players[currentGamer].currentPosition + 1) % 40;;
                 if (players[currentGamer].currentPosition == 0) {
@@ -610,13 +678,138 @@ int main() {
                 currentWindowState = TO_JAIL_TABLE;
             }
             else if (players[currentGamer].currentPosition == 7 || players[currentGamer].currentPosition == 22 || players[currentGamer].currentPosition == 36) {
-                //реализовать карточки шанс
-
-                currentWindowState = TALE_MARK;
+                int randChance = rand() % 7;
+                if (randChance == 0) {
+                    drawChance(window, font, 0, randChance);
+                    players[currentGamer].currentPosition = 0;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                    players[currentGamer].cash += 200;
+                }
+                if (randChance == 1) {
+                    drawChance(window, font, 0, randChance);
+                    players[currentGamer].currentPosition = 10;
+                    players[currentGamer].inJail = true;
+                    currentWindowState = TO_JAIL_TABLE;
+                }
+                if (randChance == 2) {
+                    drawChance(window, font, 0, randChance);
+                    players[currentGamer].cash += 150;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
+                if (randChance == 3) {
+                    players[currentGamer].cash += 50;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
+                if (randChance == 4) {
+                    drawChance(window, font, 0, randChance);
+                    players[currentGamer].cash -= 15;
+                    if (checkLose(players[currentGamer])) {
+                        currentWindowState = GAME_OVER;
+                    }
+                    else {
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                }
+                if (randChance == 5) {
+                    for (int i = 0; i < players.size(); ++i) {
+                        if (i != currentGamer) {
+                            players[i].cash += 50;
+                        }
+                    }
+                    players[currentGamer].cash -= 50 * playerQ;
+                    drawChance(window, font, 0, randChance);
+                    if (checkLose(players[currentGamer])) {
+                        currentWindowState = GAME_OVER;
+                    }
+                    else {
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                }
+                if (randChance == 6) {
+                    players[currentGamer].freeJail = true;
+                    drawChance(window, font, 0, randChance);
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
             }
             else if (players[currentGamer].currentPosition == 2 || players[currentGamer].currentPosition == 17 || players[currentGamer].currentPosition == 33) {
-                //реализовать карточки общественная казна
-                currentWindowState = TALE_MARK;
+                communityChest;
+                int randChance = rand() % 7;
+                if (randChance == 0) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].cash -= 100;
+                    if (checkLose(players[currentGamer])) {
+                        currentWindowState = GAME_OVER;
+                    }
+                    else {
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                }
+                if (randChance == 1) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].cash -= 50;
+                    if (checkLose(players[currentGamer])) {
+                        currentWindowState = GAME_OVER;
+                    }
+                    else {
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                }
+                if (randChance == 2) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].cash += 100;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
+                if (randChance == 3) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].cash -= 50;
+                    if (checkLose(players[currentGamer])) {
+                        currentWindowState = GAME_OVER;
+                    }
+                    else {
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                }
+                if (randChance == 4) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].cash += 200;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
+                if (randChance == 5) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].freeJail = true;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
+                if (randChance == 6) {
+                    drawChance(window, font, 1, randChance);
+                    players[currentGamer].cash += 100;
+                    currentGamer = (currentGamer + 1) % playerQ;
+                    currentWindowState = IN_GAME;
+                    cubeResult = 0;
+                }
             }
             else if (players[currentGamer].currentPosition == 4) {
                 currentWindowState = TAX_200;
@@ -625,8 +818,7 @@ int main() {
                 currentWindowState = TAX_100;
             }
             else if (players[currentGamer].currentPosition == 0 || players[currentGamer].currentPosition == 10 || players[currentGamer].currentPosition == 20) {
-
-                currentGamer = (currentGamer + 1) % playerQ;
+                //currentGamer = (currentGamer + 1) % playerQ;
                 currentWindowState = POINT_THE_TILE;
             }
             else {
@@ -645,20 +837,25 @@ int main() {
         }
         case POINT_THE_TILE:
         {
-            tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
-            window.draw(tales[players[currentGamer].currentPosition]);
-            Event event;
-            while (window.pollEvent(event)) {
-                switch (event.type) {
-                case Event::Closed:
-                    window.close();
-                    break;
+            while (!pressed) {
+                tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+                window.draw(tales[players[currentGamer].currentPosition]);
+                Event event;
+                while (window.pollEvent(event)) {
+                    switch (event.type) {
+                    case Event::Closed:
+                        window.close();
+                        break;
 
-                case Event::MouseButtonPressed:
-                    currentWindowState = IN_GAME;
+                    case Event::MouseButtonPressed:
+                        currentWindowState = IN_GAME;
+                        pressed = true;
+                    }
                 }
+                window.display();
             }
-            window.display();
+            currentGamer = (currentGamer + 1) % playerQ;
+            pressed = false;
             break;
         }
         case TO_JAIL_TABLE:
@@ -740,6 +937,11 @@ int main() {
         }
         case GAME_OVER:
         {
+            for (int i = 0; i < 40; ++i) {
+                if (streets[i].owner == players[currentGamer].name) {
+                    streets[i].owner = "Нет";
+                }
+            }
             RectangleShape InfoWindow(Vector2f(500, 300));
             InfoWindow.setPosition(225, 325);
             InfoWindow.setFillColor(Color(0, 0, 0, 3));
