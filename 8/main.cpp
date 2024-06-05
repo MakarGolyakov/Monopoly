@@ -663,8 +663,473 @@ int main() {
         }
         case TO_JAIL_TABLE:
         {
+            tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+            window.draw(tales[players[currentGamer].currentPosition]);
+            RectangleShape InfoWindow(Vector2f(500, 300));
+            InfoWindow.setPosition(225, 325);
+            InfoWindow.setFillColor(Color(0, 0, 0, 3));
+            window.draw(InfoWindow);
+            Text tax100("", font, 30);
+            tax100.setFillColor(Color::White);
+            tax100.setStyle(Text::Bold);
+            tax100.setString("Велкам ту тюрьма.\nВы пропускаете ход и\nне полуете 200 за круг");
+            tax100.setPosition(300, 400);
+            window.draw(tax100);
 
+            RectangleShape BUY(Vector2f(170, 50));
+            BUY.setPosition(250, 550);
+            BUY.setFillColor(Color::White);
+            window.draw(BUY);
+
+            Text buy("", font, 25);
+            buy.setFillColor(Color::Black);
+            buy.setStyle(Text::Bold);
+            buy.setString("Освободиться");
+            buy.setPosition(256, 557);
+            window.draw(buy);
+
+            RectangleShape CANCEL(Vector2f(100, 50));
+            CANCEL.setPosition(600, 550);
+            CANCEL.setFillColor(Color::White);
+            window.draw(CANCEL);
+
+            Text cancel("", font, 25);
+            cancel.setFillColor(Color::Black);
+            cancel.setStyle(Text::Bold);
+            cancel.setString("ОК");
+            cancel.setPosition(630, 557);
+            window.draw(cancel);
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Left && clicked(CANCEL, Mouse::getPosition(window), 100, 50)) {
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                    if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 170, 50)) {
+                        if (players[currentGamer].freeJail == true) {
+                            players[currentGamer].freeJail == false;
+                            players[currentGamer].inJail == false;
+                            currentGamer = (currentGamer + 1) % playerQ;
+                            currentWindowState = IN_GAME;
+                            cubeResult = 0;
+                        }
+                        else {
+                            players[currentGamer].cash -= 50;
+                            players[currentGamer].inJail = false;
+                            if (checkLose(players[currentGamer])) {
+                                currentWindowState = GAME_OVER;
+                                break;
+                            }
+                            currentGamer = (currentGamer + 1) % playerQ;
+                            currentWindowState = IN_GAME;
+                            cubeResult = 0;
+                        }
+                    }
+
+                }
+            }
+            window.display();
+            break;
+        }
+        case GAME_OVER:
+        {
+            RectangleShape InfoWindow(Vector2f(500, 300));
+            InfoWindow.setPosition(225, 325);
+            InfoWindow.setFillColor(Color(0, 0, 0, 3));
+            window.draw(InfoWindow);
+            Text tax100("", font, 30);
+            tax100.setFillColor(Color::White);
+            tax100.setStyle(Text::Bold);
+            tax100.setString("Игрок " + players[currentGamer].name + "\nобанкротился");
+            tax100.setPosition(375, 400);
+            window.draw(tax100);
+
+            RectangleShape BUY(Vector2f(120, 50));
+            BUY.setPosition(420, 550);
+            BUY.setFillColor(Color::White);
+            window.draw(BUY);
+
+            Text buy("", font, 25);
+            buy.setFillColor(Color::Black);
+            buy.setStyle(Text::Bold);
+            buy.setString("ОК");
+            buy.setPosition(455, 557);
+            window.draw(buy);
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 120, 50)) {
+                        players.erase(players.begin() + currentGamer);
+                        --playerQ;
+                        currentGamer = currentGamer % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+                }
+            }
+            window.display();
+            break;
+        }
+        case TAX_100:
+        {
+            tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+            window.draw(tales[players[currentGamer].currentPosition]);
+            RectangleShape InfoWindow(Vector2f(500, 300));
+            InfoWindow.setPosition(225, 325);
+            InfoWindow.setFillColor(Color(0, 0, 0, 3));
+            window.draw(InfoWindow);
+            Text tax100("", font, 30);
+            tax100.setFillColor(Color::White);
+            tax100.setStyle(Text::Bold);
+            tax100.setString("Вам необходимо заплатить\nналог на роскошь\nв размере 100");
+            tax100.setPosition(300, 400);
+            window.draw(tax100);
+
+            RectangleShape BUY(Vector2f(120, 50));
+            BUY.setPosition(420, 550);
+            BUY.setFillColor(Color::White);
+            window.draw(BUY);
+
+            Text buy("", font, 25);
+            buy.setFillColor(Color::Black);
+            buy.setStyle(Text::Bold);
+            buy.setString("Оплатить");
+            buy.setPosition(422, 557);
+            window.draw(buy);
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 120, 50)) {
+                        players[currentGamer].cash -= 100;
+                        if (checkLose(players[currentGamer])) {
+                            currentWindowState = GAME_OVER;
+                            break;
+                        }
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+
+                }
+            }
+            window.display();
+            break;
+        }
+        case TAX_200:
+        {
+            tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+            window.draw(tales[players[currentGamer].currentPosition]);
+            RectangleShape InfoWindow(Vector2f(500, 300));
+            InfoWindow.setPosition(225, 325);
+            InfoWindow.setFillColor(Color(0, 0, 0, 3));
+            window.draw(InfoWindow);
+            Text tax100("", font, 30);
+            tax100.setFillColor(Color::White);
+            tax100.setStyle(Text::Bold);
+            tax100.setString("Вам необходимо заплатить\nподоходный налог\nв размере 200");
+            tax100.setPosition(300, 400);
+            window.draw(tax100);
+
+            RectangleShape BUY(Vector2f(120, 50));
+            BUY.setPosition(420, 550);
+            BUY.setFillColor(Color::White);
+            window.draw(BUY);
+
+            Text buy("", font, 25);
+            buy.setFillColor(Color::Black);
+            buy.setStyle(Text::Bold);
+            buy.setString("Оплатить");
+            buy.setPosition(422, 557);
+            window.draw(buy);
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 120, 50)) {
+                        players[currentGamer].cash -= 200;
+                        if (checkLose(players[currentGamer])) {
+                            currentWindowState = GAME_OVER;
+                            break;
+                        }
+                        currentGamer = (currentGamer + 1) % playerQ;
+                        currentWindowState = IN_GAME;
+                        cubeResult = 0;
+                    }
+
+                }
+            }
+            window.display();
+            break;
+        }
+        case TALE_MARK:
+        {
+            /*
+            RectangleShape tale0(Vector2f(125, 125));
+            tale0.setPosition(825, 825);
+            tale0.setFillColor(Color(0, 0, 0, 0));
+            tales.push_back(tale0);
+            window.draw(tale0);
+            int shift = 76;
+            for (int i = 0; i < 9; ++i) {
+                RectangleShape tale(Vector2f(76, 125));
+                tale.setPosition(825 - shift, 825);
+                tale.setFillColor(Color(0, 0, 0, 0));
+                tales.push_back(tale);
+                window.draw(tale);
+                shift += 78;
+            }
+            RectangleShape tale10(Vector2f(125, 125));
+            tale10.setPosition(0, 825);
+            tale10.setFillColor(Color(0, 0, 0, 1));
+            tales.push_back(tale10);
+            window.draw(tale10);
+            shift = 76;
+            for (int i = 0; i < 9; ++i) {
+                RectangleShape tale(Vector2f(125, 76));
+                tale.setPosition(0, 825 - shift);
+                tale.setFillColor(Color(0, 0, 0, 0));
+                tales.push_back(tale);
+                window.draw(tale);
+                shift += 78;
+            }
+            RectangleShape tale20(Vector2f(125, 125));
+            tale20.setPosition(0, 0);
+            tale20.setFillColor(Color(0, 0, 0, 0));
+            tales.push_back(tale20);
+            window.draw(tale20);
+            shift = 125;
+            for (int i = 0; i < 9; ++i) {
+                RectangleShape tale(Vector2f(76, 125));
+                tale.setPosition(0 + shift, 0);
+                tale.setFillColor(Color(0, 0, 0, 0));
+                tales.push_back(tale);
+                window.draw(tale);
+                shift += 78;
+            }
+            RectangleShape tale40(Vector2f(125, 125));
+            tale40.setPosition(825, 0);
+            tale40.setFillColor(Color(0, 0, 0, 0));
+            tales.push_back(tale40);
+            window.draw(tale40);
+            shift = 125;
+            for (int i = 0; i < 9; ++i) {
+                RectangleShape tale(Vector2f(125, 76));
+                tale.setPosition(825, 0 + shift);
+                tale.setFillColor(Color(0, 0, 0, 0));
+                tales.push_back(tale);
+                window.draw(tale);
+                shift += 78;
+            }
+            //window.display();
+            */
+            currentWindowState = TALE_PREWIEW;
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+                }
+            }
+            break;
+        }
+        case TALE_PREWIEW:
+        {
+            tales[players[currentGamer].currentPosition].setFillColor(Color(0, 0, 0, 1));
+            window.draw(tales[players[currentGamer].currentPosition]);
+            RectangleShape InfoWindow(Vector2f(500, 300));
+            InfoWindow.setPosition(225, 325);
+            InfoWindow.setFillColor(Color(0, 0, 0, 3));
+            window.draw(InfoWindow);
+            drawInfo(window, font, streets[players[currentGamer].currentPosition]);
+
+            if (streets[players[currentGamer].currentPosition].owner == "Нет") {
+                RectangleShape BUY(Vector2f(100, 50));
+                BUY.setPosition(250, 550);
+                BUY.setFillColor(Color::White);
+                window.draw(BUY);
+
+                Text buy("", font, 25);
+                buy.setFillColor(Color::Black);
+                buy.setStyle(Text::Bold);
+                buy.setString("Купить");
+                buy.setPosition(256, 557);
+                window.draw(buy);
+
+                RectangleShape CANCEL(Vector2f(100, 50));
+                CANCEL.setPosition(600, 550);
+                CANCEL.setFillColor(Color::White);
+                window.draw(CANCEL);
+
+                Text cancel("", font, 25);
+                cancel.setFillColor(Color::Black);
+                cancel.setStyle(Text::Bold);
+                cancel.setString("Отмена");
+                cancel.setPosition(606, 557);
+                window.draw(cancel);
+                Event event;
+                while (window.pollEvent(event)) {
+                    switch (event.type) {
+                    case Event::Closed:
+                        window.close();
+                        break;
+
+                    case Event::MouseButtonPressed:
+                        if (event.mouseButton.button == Mouse::Left && clicked(CANCEL, Mouse::getPosition(window), 100, 50)) {
+                            currentGamer = (currentGamer + 1) % playerQ;
+                            currentWindowState = IN_GAME;
+                            cubeResult = 0;
+                        }
+                        if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 100, 50)) {
+                            players[currentGamer].cash -= streets[players[currentGamer].currentPosition].cost;
+                            streets[players[currentGamer].currentPosition].owner = players[currentGamer].name;
+                            if (checkLose(players[currentGamer])) {
+                                currentWindowState = GAME_OVER;
+                                break;
+                            }
+                            currentGamer = (currentGamer + 1) % playerQ;
+                            currentWindowState = IN_GAME;
+                            cubeResult = 0;
+                        }
+                    }
+                }
+            }
+            else {
+                if (players[currentGamer].name == streets[players[currentGamer].currentPosition].owner) {
+                    RectangleShape OK(Vector2f(120, 50));
+                    OK.setPosition(420, 550);
+                    OK.setFillColor(Color::White);
+                    window.draw(OK);
+
+                    Text ok("", font, 25);
+                    ok.setFillColor(Color::Black);
+                    ok.setStyle(Text::Bold);
+                    ok.setString("OK");
+                    ok.setPosition(426, 557);
+                    window.draw(ok);
+                    Event event;
+                    while (window.pollEvent(event)) {
+                        switch (event.type) {
+                        case Event::Closed:
+                            window.close();
+                            break;
+
+                        case Event::MouseButtonPressed:
+                            if (event.mouseButton.button == Mouse::Left && clicked(OK, Mouse::getPosition(window), 120, 50)) {
+                                currentGamer = (currentGamer + 1) % playerQ;
+                                currentWindowState = IN_GAME;
+                                cubeResult = 0;
+                            }
+                        }
+                    }
+                }
+                else {
+                    RectangleShape PAY(Vector2f(120, 50));
+                    PAY.setPosition(420, 550);
+                    PAY.setFillColor(Color::White);
+                    window.draw(PAY);
+
+                    Text pay("", font, 25);
+                    pay.setFillColor(Color::Black);
+                    pay.setStyle(Text::Bold);
+                    pay.setString("Оплатить");
+                    pay.setPosition(426, 557);
+                    window.draw(pay);
+
+                    Event event;
+                    while (window.pollEvent(event)) {
+                        switch (event.type) {
+                        case Event::Closed:
+                            window.close();
+                            break;
+
+                        case Event::MouseButtonPressed:
+                            if (event.mouseButton.button == Mouse::Left && clicked(PAY, Mouse::getPosition(window), 120, 50)) {
+                                players[currentGamer].cash -= streets[players[currentGamer].currentPosition].rent;
+                                if (checkLose(players[currentGamer])) {
+                                    currentWindowState = GAME_OVER;
+                                    break;
+                                }
+                                currentGamer = (currentGamer + 1) % playerQ;
+                                currentWindowState = IN_GAME;
+                                cubeResult = 0;
+                            }
+                        }
+                    }
+                }
+            }
+            window.display();
+            break;
+        }
+        case EXIT:
+        {
+            window.clear();
+            RectangleShape InfoWindow(Vector2f(500, 300));
+            InfoWindow.setPosition(225, 325);
+            InfoWindow.setFillColor(Color(255, 255, 255, 40));
+            window.draw(InfoWindow);
+            Text tax100("", font, 30);
+            tax100.setFillColor(Color::White);
+            tax100.setStyle(Text::Bold);
+            tax100.setString("Игра окончена!");
+            tax100.setPosition(385, 400);
+            window.draw(tax100);
+
+            RectangleShape BUY(Vector2f(120, 50));
+            BUY.setPosition(420, 550);
+            BUY.setFillColor(Color(255, 255, 255, 20));
+            window.draw(BUY);
+
+            Text buy("", font, 25);
+            buy.setFillColor(Color::White);
+            buy.setStyle(Text::Bold);
+            buy.setString("Выйти");
+            buy.setPosition(438, 557);
+            window.draw(buy);
+
+            Event event;
+            while (window.pollEvent(event)) {
+                switch (event.type) {
+                case Event::Closed:
+                    window.close();
+                    break;
+
+                case Event::MouseButtonPressed:
+                    if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 120, 50)) {
+                        window.close();
+                    }
+
+                }
+            }
+            window.display();
+            break;
         }
         }
-        return 0;
     }
+    return 0;
+}
