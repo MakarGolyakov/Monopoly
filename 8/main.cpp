@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -26,6 +25,7 @@ struct street {
     int cost;
     int rent;
 
+
     street(const string name, const string colour, int pos, int money, int nrent) {
         title = name;
         color = colour;
@@ -44,13 +44,24 @@ private:
 
 struct player {
     string name;
-    int cash = 100;
+    int cash = 2000;
     int currentPosition = 0;
     vector<street> srteets;
     bool inJail = false;
     bool freeJail = false;
-    player(const string& n) {
+    Color colour;
+
+    player(const string& n, Color col) {
         name = n;
+        colour = col;
+    }
+
+    void draww(RenderWindow& window, vector<RectangleShape> tales, vector<player> players, int currentGamer) {
+        CircleShape plmark;
+        plmark.setRadius(15);
+        plmark.setPosition(tales[players[currentGamer].currentPosition].getPosition());
+        plmark.setFillColor(players[currentGamer].colour);
+        window.draw(plmark);
     }
 };
 
@@ -254,9 +265,8 @@ void drawChance(RenderWindow& window, Font& font, bool type, int number) {
         }
         window.display();
     }
-
 }
-
+vector<street> bought;
 int main() {
     srand(time(0));
     RenderWindow window(VideoMode(950, 950), "Monopoly");
@@ -412,7 +422,6 @@ int main() {
             window.display();
             break;
         }
-
         case START_INPUT:
         {
             RectangleShape figure1(Vector2f(100, 50)); //Собака
@@ -478,7 +487,7 @@ int main() {
                         if (event.mouseButton.button == sf::Mouse::Left && clicked(figure1, Mouse::getPosition(window), 100, 50)) {
                             if (!checkUsedFigures(0)) {
                                 usedFigures.push_back(DOG);
-                                player p("Собака");
+                                player p("Собака", Color(0, 255, 0));
                                 players.push_back(p);
                                 Text gamer("", font, 20);
                                 gamer.setFillColor(Color::Red);
@@ -493,7 +502,7 @@ int main() {
                         if (event.mouseButton.button == Mouse::Left && clicked(figure2, Mouse::getPosition(window), 100, 50)) {
                             if (!checkUsedFigures(1)) {
                                 usedFigures.push_back(CAT);
-                                player p("Кот");
+                                player p("Кот", Color(255, 0, 0));
                                 players.push_back(p);
                                 Text gamer("", font, 20);
                                 gamer.setFillColor(Color::Red);
@@ -508,7 +517,7 @@ int main() {
                         if (event.mouseButton.button == Mouse::Left && clicked(figure3, Mouse::getPosition(window), 100, 50)) {
                             if (!checkUsedFigures(2)) {
                                 usedFigures.push_back(CAR);
-                                player p("Машинка");
+                                player p("Машинка", Color(0, 0, 255));
                                 players.push_back(p);
                                 Text gamer("", font, 20);
                                 gamer.setFillColor(Color::Red);
@@ -522,7 +531,7 @@ int main() {
                         if (event.mouseButton.button == sf::Mouse::Left && clicked(figure4, Mouse::getPosition(window), 100, 50)) {
                             if (!checkUsedFigures(3)) {
                                 usedFigures.push_back(HAT);
-                                player p("Шляпа");
+                                player p("Шляпа", Color(255, 255, 0));
                                 players.push_back(p);
                                 Text gamer("", font, 20);
                                 gamer.setFillColor(Color::Red);
@@ -536,7 +545,7 @@ int main() {
                         if (event.mouseButton.button == sf::Mouse::Left && clicked(figure5, Mouse::getPosition(window), 100, 50)) {
                             if (!checkUsedFigures(4)) {
                                 usedFigures.push_back(BOOT);
-                                player p("Сапог");
+                                player p("Сапог", Color(255, 0, 255));
                                 players.push_back(p);
                                 Text gamer("", font, 20);
                                 gamer.setFillColor(Color::Red);
@@ -550,7 +559,7 @@ int main() {
                         if (event.mouseButton.button == sf::Mouse::Left && clicked(figure6, Mouse::getPosition(window), 100, 50)) {
                             if (!checkUsedFigures(5)) {
                                 usedFigures.push_back(SHIP);
-                                player p("Кораблик");
+                                player p("Кораблик", Color(0, 255, 255));
                                 players.push_back(p);
                                 Text gamer("", font, 20);
                                 gamer.setFillColor(Color::Red);
@@ -568,7 +577,12 @@ int main() {
         }
         case IN_GAME:
         {
-
+            if (players[currentGamer].inJail == true) {
+                players[currentGamer].inJail = false;
+                currentGamer = (currentGamer + 1) % playerQ;
+                //currentWindowState = IN_GAME;
+                break;
+            }
             Image normalField;
             normalField.loadFromFile("E:/Рабочий стол/8/bestField3.jpg");
 
@@ -607,6 +621,39 @@ int main() {
             gamerTilt.setString("Игрок: " + players[currentGamer].name);
             gamerTilt.setPosition(140, 130);
             window.draw(gamerTilt);
+            for (int i = 0; i < bought.size(); ++i) {
+                if (bought[i].owner == "Кот") {
+                    tales[bought[i].position].setFillColor(Color(255, 0, 0, 100));
+                    window.draw(tales[bought[i].position]);
+
+                }
+                if (bought[i].owner == "Собака") {
+                    tales[bought[i].position].setFillColor(Color(0, 255, 0, 100));
+                    window.draw(tales[bought[i].position]);
+
+                }
+                if (bought[i].owner == "Машинка") {
+                    tales[bought[i].position].setFillColor(Color(0, 0, 255, 100));
+                    window.draw(tales[bought[i].position]);
+
+                }
+                if (bought[i].owner == "Шляпа") {
+                    tales[bought[i].position].setFillColor(Color(255, 255, 0, 100));
+                    window.draw(tales[bought[i].position]);
+                }
+                if (bought[i].owner == "Сапог") {
+                    tales[bought[i].position].setFillColor(Color(255, 0, 255, 100));
+                    window.draw(tales[bought[i].position]);
+                }
+                if (bought[i].owner == "Кораблик") {
+                    tales[bought[i].position].setFillColor(Color(0, 255, 255, 100));
+                    window.draw(tales[bought[i].position]);
+                }
+                //window.display();
+            }
+            for (int i = 0; i < players.size(); ++i) {
+                players[i].draww(window, tales, players, i);
+            }
             window.display();
             Event event;
             while (window.pollEvent(event)) {
@@ -629,22 +676,14 @@ int main() {
             if (players.size() == 1) {
                 currentWindowState = EXIT;
             }
-
-
             break;
         }
         case CUBE_DROPED:
         {
             if (!cubeResult) {
-                //cubeResult = rand() % 12 + 1;
-                cubeResult = 1;
+                cubeResult = rand() % 12 + 1;
+                //cubeResult = 5;
             }
-            Text res("", font, 40);
-            res.setFillColor(Color::Black);
-            res.setStyle(Text::Bold);
-            res.setString(std::to_string(cubeResult));
-            res.setPosition(720, 230);
-            window.draw(res);
 
             Event event;
             while (window.pollEvent(event)) {
@@ -660,12 +699,6 @@ int main() {
         }
         case GAMER_STEP:
         {
-
-            if (players[currentGamer].inJail == true) {
-                currentGamer = (currentGamer + 1) % playerQ;
-                players[currentGamer].inJail == false;
-            }
-
             for (int i = 0; i < cubeResult; ++i) {
                 players[currentGamer].currentPosition = (players[currentGamer].currentPosition + 1) % 40;;
                 if (players[currentGamer].currentPosition == 0) {
@@ -701,6 +734,7 @@ int main() {
                     cubeResult = 0;
                 }
                 if (randChance == 3) {
+                    drawChance(window, font, 0, randChance);
                     players[currentGamer].cash += 50;
                     currentGamer = (currentGamer + 1) % playerQ;
                     currentWindowState = IN_GAME;
@@ -744,7 +778,6 @@ int main() {
                 }
             }
             else if (players[currentGamer].currentPosition == 2 || players[currentGamer].currentPosition == 17 || players[currentGamer].currentPosition == 33) {
-                communityChest;
                 int randChance = rand() % 7;
                 if (randChance == 0) {
                     drawChance(window, font, 1, randChance);
@@ -1089,65 +1122,6 @@ int main() {
         }
         case TALE_MARK:
         {
-            /*
-            RectangleShape tale0(Vector2f(125, 125));
-            tale0.setPosition(825, 825);
-            tale0.setFillColor(Color(0, 0, 0, 0));
-            tales.push_back(tale0);
-            window.draw(tale0);
-            int shift = 76;
-            for (int i = 0; i < 9; ++i) {
-                RectangleShape tale(Vector2f(76, 125));
-                tale.setPosition(825 - shift, 825);
-                tale.setFillColor(Color(0, 0, 0, 0));
-                tales.push_back(tale);
-                window.draw(tale);
-                shift += 78;
-            }
-            RectangleShape tale10(Vector2f(125, 125));
-            tale10.setPosition(0, 825);
-            tale10.setFillColor(Color(0, 0, 0, 1));
-            tales.push_back(tale10);
-            window.draw(tale10);
-            shift = 76;
-            for (int i = 0; i < 9; ++i) {
-                RectangleShape tale(Vector2f(125, 76));
-                tale.setPosition(0, 825 - shift);
-                tale.setFillColor(Color(0, 0, 0, 0));
-                tales.push_back(tale);
-                window.draw(tale);
-                shift += 78;
-            }
-            RectangleShape tale20(Vector2f(125, 125));
-            tale20.setPosition(0, 0);
-            tale20.setFillColor(Color(0, 0, 0, 0));
-            tales.push_back(tale20);
-            window.draw(tale20);
-            shift = 125;
-            for (int i = 0; i < 9; ++i) {
-                RectangleShape tale(Vector2f(76, 125));
-                tale.setPosition(0 + shift, 0);
-                tale.setFillColor(Color(0, 0, 0, 0));
-                tales.push_back(tale);
-                window.draw(tale);
-                shift += 78;
-            }
-            RectangleShape tale40(Vector2f(125, 125));
-            tale40.setPosition(825, 0);
-            tale40.setFillColor(Color(0, 0, 0, 0));
-            tales.push_back(tale40);
-            window.draw(tale40);
-            shift = 125;
-            for (int i = 0; i < 9; ++i) {
-                RectangleShape tale(Vector2f(125, 76));
-                tale.setPosition(825, 0 + shift);
-                tale.setFillColor(Color(0, 0, 0, 0));
-                tales.push_back(tale);
-                window.draw(tale);
-                shift += 78;
-            }
-            //window.display();
-            */
             currentWindowState = TALE_PREWIEW;
 
             Event event;
@@ -1210,6 +1184,7 @@ int main() {
                         if (event.mouseButton.button == Mouse::Left && clicked(BUY, Mouse::getPosition(window), 100, 50)) {
                             players[currentGamer].cash -= streets[players[currentGamer].currentPosition].cost;
                             streets[players[currentGamer].currentPosition].owner = players[currentGamer].name;
+                            bought.push_back(streets[players[currentGamer].currentPosition]);
                             if (checkLose(players[currentGamer])) {
                                 currentWindowState = GAME_OVER;
                                 break;
